@@ -34,7 +34,14 @@ const fileFields = [
 	{ name: 'csv', maxCount: 1 },
 ]
 
-app.use(cors())
+console.log('process.env.FRONTEND_URL:', process.env.FRONTEND_URL)
+const corsOptions = {
+	origin: process.env.FRONTEND_URL,
+	// origin: 'http://localhost:5173',
+	credentials: true,
+}
+
+app.use(cors(corsOptions))
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
 
@@ -58,25 +65,20 @@ app.post('/api/sample', upload.fields(fileFields), async (req, res) => {
 	)
 
 	const absolutePath = path.resolve(genCert)
-	res.sendFile(absolutePath, (err) => {
+	res.sendFile(absolutePath, async (err) => {
 		if (err) {
 			console.log(err)
 			res.status(500).send('Error sending file')
 		} else {
 			console.log('File sent: ', genCert)
-			setTimeout(() => {
-				fs.unlink(absolutePath, (err) => {
+			console.log('Error: ', err)
+			const filesToDelete = [absolutePath, certificatePath, fontPath]
+			filesToDelete.forEach((filePath) => {
+				fs.unlink(filePath, (err) => {
 					if (err)
-						console.log('Error in deleting file: ', absolutePath)
+						console.error(`Error deleting file ${filePath}:`, err)
 				})
-				fs.unlink(certificatePath, (err) => {
-					if (err)
-						console.log('Error in deleting file: ', certificatePath)
-				})
-				fs.unlink(fontPath, (err) => {
-					if (err) console.log('Error in deleting file: ', fontPath)
-				})
-			}, 10000)
+			})
 		}
 	})
 })
