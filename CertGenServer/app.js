@@ -52,6 +52,7 @@ app.get('/api/', (req, res) => {
 })
 
 app.post('/api/sample', upload.fields(fileFields), async (req, res) => {
+	console.log("Request: ", req)
 	const certificatePath = req.files.certificate[0].path
 	var fontPath = req.files.font[0].path
 	const size = req.body.size
