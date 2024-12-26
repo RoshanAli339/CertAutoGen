@@ -38,12 +38,19 @@ console.log('process.env.FRONTEND_URL:', process.env.FRONTEND_URL)
 const corsOptions = {
 	origin: process.env.FRONTEND_URL,
 	// origin: 'http://localhost:5173',
+	methods: ['GET', 'POST'],
 	credentials: true,
 }
 
 app.use(cors(corsOptions))
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(bodyParser.json())
+app.use((req, res, next) => {
+	res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL)
+	res.setHeader('Access-Control-Allow-Methods', 'GET, POST')
+	res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+	next()
+})
 
 app.get('/api/', (req, res) => {
 	res.json({
@@ -52,36 +59,50 @@ app.get('/api/', (req, res) => {
 })
 
 app.post('/api/sample', upload.fields(fileFields), async (req, res) => {
+<<<<<<< HEAD
 	console.log("Request: ", req)
 	const certificatePath = req.files.certificate[0].path
 	var fontPath = req.files.font[0].path
 	const size = req.body.size
 	const fieldsCoords = JSON.parse(req.body.fieldsCoords)
+=======
+	try {
+		const certificatePath = req.files.certificate[0].path
+		var fontPath = req.files.font[0].path
+		const size = req.body.size
+		const fieldsCoords = JSON.parse(req.body.fieldsCoords)
+>>>>>>> 7027bf1 (cors changes)
 
-	var genCert = await generateSample(
-		certificatePath,
-		fontPath,
-		size,
-		fieldsCoords
-	)
+		var genCert = await generateSample(
+			certificatePath,
+			fontPath,
+			size,
+			fieldsCoords
+		)
 
-	const absolutePath = path.resolve(genCert)
-	res.sendFile(absolutePath, async (err) => {
-		if (err) {
-			console.log(err)
-			res.status(500).send('Error sending file')
-		} else {
-			console.log('File sent: ', genCert)
-			console.log('Error: ', err)
-			const filesToDelete = [absolutePath, certificatePath, fontPath]
-			filesToDelete.forEach((filePath) => {
-				fs.unlink(filePath, (err) => {
-					if (err)
-						console.error(`Error deleting file ${filePath}:`, err)
+		const absolutePath = path.resolve(genCert)
+		res.sendFile(absolutePath, async (err) => {
+			if (err) {
+				console.log(err)
+				res.status(500).send('Error sending file')
+			} else {
+				console.log('File sent: ', genCert)
+				console.log('Error: ', err)
+				const filesToDelete = [absolutePath, certificatePath, fontPath]
+				filesToDelete.forEach((filePath) => {
+					fs.unlink(filePath, (err) => {
+						if (err)
+							console.error(
+								`Error deleting file ${filePath}:`,
+								err
+							)
+					})
 				})
-			})
-		}
-	})
+			}
+		})
+	} catch (error) {
+		console.log('error sending sample file:', error)
+	}
 })
 
 app.post('/api/zip', upload.fields(fileFields), async (req, res) => {
