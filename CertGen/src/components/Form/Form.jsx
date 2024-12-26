@@ -140,7 +140,8 @@ function Form() {
 
         try {
             const response = await axios.post(
-                'http://localhost:5000/api/sample',
+                `${import.meta.env.VITE_BACKENDURL}/api/sample`,
+                // 'http://localhost:5000/api/sample',
                 formData,
                 {
                     responseType: 'blob',
@@ -176,7 +177,7 @@ function Form() {
             toast.error('Please enter a valid font size')
             return
         }
-        if (primary === ''){
+        if (primary === '') {
             toast.error('Please provide a primary attribute')
             return
         }
@@ -195,7 +196,8 @@ function Form() {
 
         try {
             const response = await axios.post(
-                'http://localhost:5000/api/zip',
+                `${import.meta.env.VITE_BACKENDURL}/api/zip`,
+                // 'http://localhost:5000/api/zip',
                 formData,
                 {
                     responseType: 'blob',
