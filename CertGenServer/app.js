@@ -59,19 +59,12 @@ app.get('/api/', (req, res) => {
 })
 
 app.post('/api/sample', upload.fields(fileFields), async (req, res) => {
-<<<<<<< HEAD
-	console.log("Request: ", req)
-	const certificatePath = req.files.certificate[0].path
-	var fontPath = req.files.font[0].path
-	const size = req.body.size
-	const fieldsCoords = JSON.parse(req.body.fieldsCoords)
-=======
+	console.log('Request: ', req)
 	try {
 		const certificatePath = req.files.certificate[0].path
 		var fontPath = req.files.font[0].path
 		const size = req.body.size
 		const fieldsCoords = JSON.parse(req.body.fieldsCoords)
->>>>>>> 7027bf1 (cors changes)
 
 		var genCert = await generateSample(
 			certificatePath,
