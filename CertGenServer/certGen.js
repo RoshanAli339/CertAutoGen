@@ -3,25 +3,20 @@ const im = gm.subClass({
 	appPath: './magick',
 })
 
-export default function generateSample(inputImage, font, size, fieldsCoords) {
+export function generateSample(inputImage, font, fontSize, fieldsCoords) {
 	return new Promise((resolve, reject) => {
 		var filePath = inputImage.substring(0, inputImage.lastIndexOf('.'))
-		var image = im(inputImage).font(font, size)
-		for (const [key, value] of Object.entries(fieldsCoords)){
-			image = image.drawText(
-				value[0],
-				value[1],
-				"Sample Text"
-			)
+		var image = im(inputImage).font(font, fontSize)
+		for (const values of Object.values(fieldsCoords)) {
+			image = image.drawText(values[0], values[1], 'Sample Text')
 		}
 		filePath = filePath + 'Gen.jpg'
 		image.write(filePath, (err) => {
-			if(err){
+			if (err) {
 				console.log(err)
 				reject(err)
-			}
-			else {
-				console.log("Image successfully created")
+			} else {
+				console.log('Image successfully created')
 				resolve(filePath)
 			}
 		})
