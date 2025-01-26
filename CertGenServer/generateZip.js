@@ -42,6 +42,8 @@ const generateImage = (imagePath, fontPath, fontSize, fieldsCoords, row) => {
 				fieldsCoords[key][1],
 				value
 			)
+		} else {
+			console.log(`${key} not found for ${row}`)
 		}
 	}
 	return img
@@ -50,8 +52,10 @@ const generateImage = (imagePath, fontPath, fontSize, fieldsCoords, row) => {
 const writeImage = (img, outputPath) => {
 	return new Promise((resolve, reject) => {
 		img.write(outputPath, (err) => {
-			if (err) console.log('Error writing file: ', outputPath)
-			else resolve(outputPath)
+			if (err) {
+				console.log('Error writing file: ', outputPath)
+				reject(err)
+			} else resolve(outputPath)
 		})
 	})
 }
@@ -72,14 +76,16 @@ const zipDirectory = (source, out) => {
 }
 
 const deleteDirectory = async (dirPath) => {
-    const files = await readdir(dirPath)
-    await Promise.all(files.map(async(file)=>{
-        await unlink(path.join(dirPath, file))
-    }))
-    await rmdir(dirPath)
+	const files = await readdir(dirPath)
+	await Promise.all(
+		files.map(async (file) => {
+			await unlink(path.join(dirPath, file))
+		})
+	)
+	await rmdir(dirPath)
 }
 
-export default async function generateZip(
+export async function generateZip(
 	imagePath,
 	fontPath,
 	fontSize,
@@ -96,10 +102,13 @@ export default async function generateZip(
 		try {
 			await access(zipPath)
 		} catch (err) {
+			console.log(`Zip folder not existing creating now: ${err}`)
 			await mkdir(zipPath)
 		}
+		console.log(`Primary field: ${primaryField}`)
 
 		const imagePromises = results.map(async (row) => {
+			console.log(`Row: ${row}`)
 			const img = generateImage(
 				imagePath,
 				fontPath,
@@ -108,22 +117,23 @@ export default async function generateZip(
 				row
 			)
 			const absolutePath = path.resolve(
-				zipPath + '/' + row[primaryField] + '.jpg'
+				`${zipPath}/${row[primaryField]}.jpg`
 			)
+			console.log(absolutePath)
 			return writeImage(img, absolutePath)
 		})
 
 		await Promise.all(imagePromises)
 		console.log('All images successfully created')
 
-        const zipFile = `${zipPath}.zip`
-        await zipDirectory(zipPath, zipFile)
-        console.log("Directory successfully zipped: ", zipFile)
+		const zipFile = `${zipPath}.zip`
+		await zipDirectory(zipPath, zipFile)
+		console.log('Directory successfully zipped: ', zipFile)
 
-        await deleteDirectory(zipPath)
-        console.log("Directory deleted successfully")
+		await deleteDirectory(zipPath)
+		console.log('Directory deleted successfully')
 
-        return zipFile
+		return zipFile
 	} catch (err) {
 		console.log('Error in generating files: ', err)
 	}

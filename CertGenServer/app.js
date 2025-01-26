@@ -4,8 +4,8 @@ import multer from 'multer'
 import cors from 'cors'
 import path from 'path'
 import fs from 'fs'
-import generateZip from './generateZip.js'
-import generateSample from './certGen.js'
+import { generateZip } from './generateZip.js'
+import { generateSample } from './certGen.js'
 
 const app = express()
 const PORT = 5000
@@ -58,6 +58,61 @@ app.get('/api/', (req, res) => {
 	})
 })
 
+app.post('/api/sample2', upload.fields(fileFields), async (req, res) => {
+	console.log('Request: ', req.body)
+	try {
+		const certificatePath = req.files.certificate[0].path
+		const fontPath = req.files.font[0].path
+		const csvPath = req.files.csv[0].path
+
+		const fontSize = req.body.fontSize
+		const fieldsLength = req.body.fieldsLength
+
+		const coordinates = {}
+
+		for (let i = 0; i < fieldsLength; i++) {
+			coordinates[req.body[`propertyName-${i}`]] = [
+				req.body[`xcoord-${i}`],
+				req.body[`ycoord-${i}`],
+			]
+		}
+
+		var genCert = await generateSample(
+			certificatePath,
+			fontPath,
+			fontSize,
+			coordinates
+		)
+
+		const absolutePath = path.resolve(genCert)
+		res.sendFile(absolutePath, async (err) => {
+			if (err) {
+				console.log(err)
+				res.status(500).send('Error sending file')
+			} else {
+				console.log('File sent: ', genCert)
+				const filesToDelete = [
+					absolutePath,
+					certificatePath,
+					fontPath,
+					csvPath,
+				]
+				filesToDelete.forEach((filePath) => {
+					fs.unlink(filePath, (err) => {
+						if (err)
+							console.error(
+								`Error deleting file ${filePath}:`,
+								err
+							)
+					})
+				})
+			}
+		})
+	} catch (error) {
+		console.log('error sending sample file:', error)
+	}
+})
+
 app.post('/api/sample', upload.fields(fileFields), async (req, res) => {
 	console.log('Request: ', req)
 	try {
@@ -104,15 +159,24 @@ app.post('/api/zip', upload.fields(fileFields), async (req, res) => {
 	const csvPath = req.files.csv[0].path
 	console.log(csvPath)
 
-	const size = parseInt(req.body.size)
+	const size = parseInt(req.body.fontSize)
 	const primaryField = req.body.primary
-	const fieldsCoords = JSON.parse(req.body.fieldsCoords)
+	const fieldsLength = parseInt(req.body.fieldsLength)
+	console.log(`Primary field from req: ${req.primary}`)
 
+	const coordinates = {}
+
+	for (let i = 0; i < fieldsLength; i++) {
+		coordinates[req.body[`propertyName-${i}`]] = [
+			req.body[`xcoord-${i}`],
+			req.body[`ycoord-${i}`],
+		]
+	}
 	var zipPath = await generateZip(
 		certificatePath,
 		fontPath,
 		size,
-		fieldsCoords,
+		coordinates,
 		csvPath,
 		primaryField
 	)
