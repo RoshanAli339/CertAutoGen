@@ -36,7 +36,7 @@ const fileFields = [
 
 console.log('process.env.FRONTEND_URL:', process.env.FRONTEND_URL)
 const corsOptions = {
-	origin: [process.env.FRONTEND_URL],
+	origin: [process.env.FRONTEND_URL, 'https://cert-gen-mu.vercel.app/'],
 	// origin: 'http://localhost:5173',
 	methods: ['GET', 'POST'],
 	credentials: true,
