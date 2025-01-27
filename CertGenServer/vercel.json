@@ -12,12 +12,6 @@
 			"dest": "app.js"
 		}
 	],
-	"rewrites": [
-		{
-			"source": "/(.*)*",
-			"destination": "./app.js"
-		}
-	],
 	"headers": [
 		{
 			"source": "/(.*)*",
